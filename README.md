@@ -44,6 +44,15 @@ Sistema Administrativo - Crud - Completo
 -- Sistema de registro foi usado axios para requisições ajax. 
 <br>
 
+<br>
+<h1> Video publicado no meu canal do YouTube:</h1>
+
+
+https://www.youtube.com/watch?v=v54vX0g-ZCU
+ 
+</video> 
+
+<br>
 
 <br>
 
@@ -100,6 +109,11 @@ https://user-images.githubusercontent.com/76443540/167030789-7471cb9e-8e50-4c1a-
 <br>
 <br>
 
+<h3> -----------------------------------<br>
+Login Sistema Administrativo: <br>
+E-mail: testelaravelsistema@gmail.com <br>
+Senha: testando12345<br>
+----------------------------------------</h3>
 <h3>------> Baixar e Instalar o XAMPP  e criar no PhpMyAdmin : criar o DataBase:bandodedadossistemalaravelcompleto <-----------</h3>
 <br>
 <br>
