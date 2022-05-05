@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10.0.2/dist/sweetalert2.min.css">  
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <title>Teste Full Stack - LARAVEL & VUE JS</title>
+</head>
+<body>
+    <div id="app" >
+        <v-app >
+
+            <v-main>  
+                
+                <v-card class="mx-auto mt-5" max-width="1300">
+                <br>
+                <div v-if="mostrartudomesmo">
+                    <v-btn rounded color="primary " @click="novocliente()">Novo Cliente</v-btn> 
+                    <v-btn rounded color="secondary " @click="novovendedor()">Novo Vendedor</v-btn> 
+                    <v-btn rounded color="error " @click="sairSistem()">Sair</v-btn>
+
+
+                   <!-- Tabla y formulario -->
+                    <v-simple-table class="mt-5" dark>
+                            <template v-slot:default>
+                                <thead>
+                                    <tr class="black warning">
+                                        <th class="white--text">ID</th>
+                                        <th class="white--text">NOME</th>
+                                        <th class="white--text">EMAIL</th>
+                                        <th class="white--text text-center">TELEFONE</th>
+                                        <th class="white--text text-center">TIPO CLIENTE</th>
+                                        <th class="white--text text-center">VENDEDOR</th>
+                                        <th class="white--text text-center">FOTO</th>
+                                        <th class="white--text text-center"></th>
+                                        
+                                        
+                                       
+                                    </tr>
+                                </thead>
+                                <tbody id="bodyTabela">
+                                    <tr v-for="registr in clientes" :key="registr.id">
+                                    <td>{{ registr.id }}</td>
+                                    <td>{{ registr.nome }}</td>
+                                    <td>{{ registr.email }}</td>
+                                    <td>{{registr.telefones[0].telefone }}</td>
+                                    <td>{{registr.tipo_cliente.tipocliente }}</td>
+                                    <td>{{registr.vendedores[0].nome }}</td>
+                                    <td><v-img :src="`${registr.imagem}`" max-height="80" max-width="50"></v-img></td>
+                                    
+                                    
+                                    <td>
+                                        <v-btn  color="success" @click="editarcliente(registr.id,registr.nome,registr.email,registr.telefones[0].telefone,registr.imagem,registr.tipo_cliente.tipocliente,registr.vendedores[0].nome )"><v-icon left>mdi-pencil</v-icon>Editar</v-btn>
+                                        <v-btn class="error" dark @click="deletandocliente(registr.id)">Deletar</v-btn>
+                                        <v-btn class="purple" dark @click="enviandoEmailModal(registr.email)">Enviar Email</v-btn>
+                                    </td>
+                                    </tr>
+                                </tbody>
+                            </template>
+                    </v-simple-table>
+                </div>
+                </v-card>
+                
+     <!-- Componente de Diálogo para CRIAR E EDITAR Modal -->
+     <v-dialog v-model="dialog" max-width="500">        
+        <v-card>
+          <v-card-title class="blue-grey darken-1 white--text">Cliente {{tipocliente}}</v-card-title>   
+          <br> 
+          <v-card-text>            
+            <v-form>             
+              <v-container>
+                <v-row>
+                    
+                    
+                  <input v-model="cliente.id" hidden></input>
+                  
+                   <v-col cols="20" md="40">
+                        <v-text-field v-model="cliente.nome" label="Nome" solo required>{{cliente.nome}}</v-text-field>
+                    </v-col>
+                  
+                  <v-col cols="20" md="40">  
+                    <div v-if="condEdicao == true & tipocliente == ' - Edição' ">
+                        <v-text-field v-model="cliente.email"  label="Email"  solo disabled></v-text-field>
+                    </div>
+                    <div v-else>
+                        <v-text-field v-model="cliente.email"  label="Email"  solo ></v-text-field>
+                    </div>
+                  </v-col>
+                  
+                  <v-col cols="10" sm="50" >
+                    <v-text-field v-model="cliente.telefone"  label="Telefone"  solo required></v-text-field>
+                  </v-col>
+                  <v-col class="d-flex" cols="10" sm="50" >
+                      <v-select v-model="cliente.vendedor" v-if="condControlVendedor" :items="cliente.vendedores" label="Vendedor" dense ></v-select>
+                      <v-select v-model="cliente.vendedor" v-else :items="cliente.vendedores" disabled label="Vendedor" dense ></v-select>
+                    
+                  </v-col>
+
+                  <v-col  class="d-flex" cols="10" sm="50" >
+
+                  <v-select v-model="cliente.tipoClienteEscolhido"  :items="cliente.tipoCliente" label="Tipo Cliente" dense ></v-select>
+                  
+                </v-col>
+                                
+                  <v-col cols="12">
+                    <div v-if="condEdicao == true & tipocliente == ' - Edição' ">
+                        <div id="divFtAtual">Foto Atual:</div>
+                        <img id="fotoEditar"    height="50" width="50" :src="`${cliente.foto}`">
+                        <br>
+                        <div id="divFtNova">Foto Nova:</div>
+
+                    </div>
+                    
+                    <input type="file"  required id="foto"  @change="fileEscolhido"/> 
+
+
+
+                  </v-col>
+                  <br>
+                  <br>
+                  <v-col cols="12" >
+                    <div v-if="erro.mostrar">
+                        <v-alert :type="`${tipo.alerta}`">{{erro.mensagem}}</v-alert>
+
+                    </div>
+                    
+
+                  </v-col>
+                  
+                  
+                </v-row>
+              </v-container>            
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn @click="dialog=false">Cancelar</v-btn>
+            <v-btn @click="salvarcliente()" type="submit" color="green" dark>Salvar</v-btn>
+          </v-card-actions>
+          </v-form>
+        </v-card>
+      </v-dialog>
+
+      <!--- Login e Cadastro Modal-->
+      <v-dialog v-model="loginCadastro" max-width="500" >        
+        <v-card>
+          <v-card-title class="blue-grey darken-1 white--text">Login Administrativo</v-card-title>   
+          <br> 
+          <v-card-text>            
+            <v-form>             
+              <v-container>
+                <v-row>
+                  <v-col cols="10" md="50">
+                    <v-text-field v-model="logandoSistema.email" type="email"  label="Email"  solo required></v-text-field>
+                  </v-col>
+    
+                  <v-col cols="10" md="50">  
+                    <v-text-field v-model="logandoSistema.senha" label="Senha" type="password" solo required></v-text-field>
+                  </v-col>
+                  <br>
+                  <br>
+                  <v-col cols="12" >
+                    <div v-if="erro.mostrar">
+                        <v-alert :type="`${tipo.alerta}`">{{erro.mensagem}}</v-alert>
+
+                    </div>
+                    
+                  </v-col>
+                  
+                </v-row>
+              </v-container>            
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            
+            <v-btn @click="logarnoSistema()" type="submit"  color="green" dark>Entrar</v-btn>
+          </v-card-actions>
+          </v-form>
+        </v-card>
+      </v-dialog>
+
+       <!--- Vendedor Criar Modal -->
+      <v-dialog v-model="vendedor" max-width="500" >        
+        <v-card>
+          <v-card-title class="blue-grey darken-1 white--text">Vendedor</v-card-title>   
+          <br> 
+          <v-card-text>            
+            <v-form>             
+              <v-container>
+                <v-row>
+                    
+                    
+                  
+                  <v-col cols="10" md="50">
+                    <v-text-field v-model="cadastrandoVendedor.nome" type="text"  label="nome"  solo required></v-text-field>
+                  </v-col>
+    
+                  
+                  <br>
+                  <br>
+                  <v-col cols="12" >
+                    <div v-if="erro.mostrar">
+                        <v-alert :type="`${tipo.alerta}`">{{erro.mensagem}}</v-alert>
+
+                    </div>
+                    
+
+                  </v-col>
+                  
+                 
+
+
+
+                  
+                  
+                </v-row>
+              </v-container>            
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            
+            <v-btn @click="registrandoVendedorNovo()" type="submit"  color="green" dark>Cadastrar</v-btn>
+          </v-card-actions>
+          </v-form>
+        </v-card>
+      </v-dialog>
+
+      <!-- Enviar email Modal-->
+           
+            <v-dialog v-model="enviarEmail" max-width="500" >        
+                <v-card>
+                  <v-card-title class="blue-grey darken-1 white--text">Enviando Email</v-card-title>   
+                  <br> 
+                  <v-card-text>            
+                    <v-form>             
+                      <v-container>
+                        <v-row>
+                            <v-col cols="10" md="100">  
+                                <v-text-field v-model="enviandoEmail.assunto" label="Assunto" type="text" solo required></v-text-field>
+                              </v-col>
+            
+                          <v-col cols="10" md="100">  
+                            <v-text-field v-model="enviandoEmail.mensagem" label="Mensagem" type="text" solo required></v-text-field>
+                          </v-col>
+                          <br>
+                          <br>
+                          <v-col cols="12" >
+                            <div v-if="erro.mostrar">
+                                <v-alert :type="`${tipo.alerta}`">{{erro.mensagem}}</v-alert>
+        
+                            </div>
+                            
+                          </v-col>
+                          
+                        </v-row>
+                      </v-container>            
+                  </v-card-text>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    
+                    <v-btn @click="enviarEmaill()" type="submit"  color="green" dark>Enviar</v-btn>
+                  </v-card-actions>
+                  </v-form>
+                </v-card>
+              </v-dialog>
+            </v-main>
+        </v-app>
+    </div>
+
+
+     
+
+      
+
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.20.0/axios.min.js" integrity="sha512-quHCp3WbBNkwLfYUMd+KwBAgpVukJu5MncuQaWXgCrfgcxCJAq/fo+oqrRKOj+UKEmyMCG3tb8RB63W+EmrOBg==" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.0.2/dist/sweetalert2.all.min.js"></script>
+    
+    <script>
+        let url = "http://127.0.0.1:8000/api/cliente";
+       
+        Vue.config.productionTip = false
+        
+        
+        let aplication = new Vue({
+            el: '#app',
+            vuetify: new Vuetify(),
+            data(){
+                return{
+                    mostrartudomesmo: false,
+                    clientes:[],
+                    dialog:false,
+                    vendedor: false,
+                    loginCadastro:true,
+                    saird: false,
+                    tipoClienteVendedor: null,
+                    opcao:'',
+                    condEdicao:false ,
+                    controlador: false,
+                    erro:{
+                        mostrar: false,
+                        mensagem: ""
+                        
+
+                    },
+                    tipo:{
+                        alerta:"error"
+                    },
+                    enviandoEmail:{
+                        email:"",
+                        mensagem:"",
+                        assunto:""
+                    },
+                    enviarEmail:false
+                    ,
+                    logandoSistema:{
+                        email: "",
+                        senha: ""
+                    },
+                    condControlVendedor: false,
+
+                    cadastrandoVendedor:{
+                        nome: ""
+
+                    },
+                    tipocliente: '',
+                    cliente:{
+                        id:null,
+                        nome:"",
+                        email:"",
+                        telefone:"",
+                        foto:"",
+                        vendedores:[],
+                        vendedor:"",
+                        tipoCliente:['Pessoa Física', 'Pessoa Jurídica'],
+                        tipoClienteEscolhido:""
+
+                    }
+                }
+            },
+            created(){
+                
+                
+                
+
+            },
+            updated(){
+                if(this.saird == false)
+                {
+                    
+                    this.fixar(valor = null);
+
+                }else if(this.saird == true)
+                {
+                   
+                    this.fixar(valor = false);
+
+                }
+
+                
+                
+               
+                
+            },
+          
+
+            methods:{
+
+                fixar:function(valor){
+                   
+                    if(valor == false )
+                    {
+                        this.loginCadastro = false;
+
+                    }else if(valor == null)
+                    {
+                        this.loginCadastro = true;
+                    }
+                    
+
+
+                },
+                logarnoSistema:function(){
+                    
+                    
+
+                    let urlPost = "http://127.0.0.1:8000/api/auth/login";
+                    
+                    
+                    let formLogandoSistema = new FormData();
+                    formLogandoSistema.append('email', this.logandoSistema.email);
+                    formLogandoSistema.append('password', this.logandoSistema.senha);
+                    axios.post(urlPost, formLogandoSistema,{headers: {
+
+
+                        'Content-Type': 'multipart/form-data'
+                        }}).then(response=>{
+                            
+               
+                            if(response.status == 200)
+                            {
+                                if( response.data.access_token != undefined)
+                                {
+                                    
+                                    localStorage.setItem('access_token', response.data.access_token);
+                                    
+                                    this.mostrartudomesmo = true;
+                                    
+
+                                    this.erro.mostrar = true;
+                                    this.tipo.alerta = "success";
+                                    this.erro.mensagem = "Acesso liberado com sucesso!!!"
+                                    setTimeout(() => {
+                                        this.erro.mostrar = false;
+                                        this.dialog = false;
+                                        this.saird = true
+                                        this.loginCadastro = false;
+
+                                    }, 2000);
+                                    
+                                    
+                                    this.mostrar();
+
+                                }
+                            }
+
+                        
+                
+                        
+                        }).catch((error) => {
+                            // Trate o erro aqui.
+                            this.validacoeRespostaBackEnd(error.response);
+                        })
+
+
+                    
+                    
+                    //Por fim libera o acesso ao sistema;
+                    //this.loginCadastro = false;
+                    
+
+                },
+                sairSistem:function(){
+                    localStorage.removeItem('access_token');
+                    this.logandoSistema.email="";
+                    this.logandoSistema.senha="";
+                    this.loginCadastro = true;
+                    this.saird = false;
+                    this.mostrartudomesmo = false;
+                    
+
+                },
+
+                listarDadosVendedor:function(){
+                    let token = localStorage.getItem('access_token');
+                    let urlPost = "http://127.0.0.1:8000/api/pegarVendedores/";
+                   
+                    axios.get(urlPost,{headers: {
+
+                        'Content-Type': 'multipart/form-data',
+                        Authorization: `Bearer ${token}`
+                        }}).then(response=>{
+                            
+                           
+                            
+                            this.cliente.vendedores =Object.values(response.data.vendedor);
+                            if(this.cliente.vendedores.length > 0)
+                            {
+                                this.condControlVendedor = true;
+
+                            }
+                    
+                            
+                            
+                            
+                            
+                            
+
+                           //this.validacoeRespostaBackEnd(response);
+
+                           
+
+                            
+                            
+                            
+                            
+                        }).catch((error) => {
+                            //this.validacoeRespostaBackEnd(error.response);
+                        })
+
+                        
+
+
+                },
+
+
+                enviandoEmailModal:function(email){
+                    this.enviarEmail = true;
+                    this.enviandoEmail.email = email;
+
+                    
+                   
+                    
+                    
+
+                },
+                enviarEmaill:function(){
+                    let token = localStorage.getItem('access_token');
+                        
+                        let formDataEviarEmail = new FormData();
+                            
+                        let urlEdit ="http://127.0.0.1:8000/api/enviandoEmail";
+                        formDataEviarEmail.append('email', this.enviandoEmail.email);
+                        formDataEviarEmail.append('mensagem', this.enviandoEmail.mensagem);
+                        formDataEviarEmail.append('assunto', this.enviandoEmail.assunto);
+                          
+                            
+                            
+                            
+    
+                        axios.post(urlEdit, formDataEviarEmail,{headers: {
+    
+                            'Content-Type': 'multipart/form-data',
+                            Authorization: `Bearer ${token}`
+                        }}).then(response=>{
+                                
+                            if(response.status == 200)
+                            {
+                                this.erro.mostrar = true;
+                                this.tipo.alerta = "success";
+                                this.erro.mensagem = "E-mail Enviado com Sucesso!!!"
+                                setTimeout(() => {
+                                    this.erro.mostrar = false;
+                                    this.dialog = false;
+                                }, 2500);
+
+                                this.enviandoEmail.mensagem = "";
+                                this.enviandoEmail.assunto = ""
+
+
+                            }
+                               
+                                
+                                
+                                
+                                
+                        }).catch((error) => {
+                            this.erro.mostrar = true;
+                            this.tipo.alerta = "error";
+                            this.erro.mensagem = "E-mail inválido"
+                                    
+                            setTimeout(() => {this.erro.mostrar = false;
+                            }, 2000);
+                        })
+
+
+
+                },
+                mostrar:function(){
+                    let token = localStorage.getItem('access_token');
+                    
+                    let urlGet = "http://127.0.0.1:8000/api/listarTodosCliente";
+                    axios.get(urlGet,{headers: {
+
+                        'Content-Type': 'multipart/form-data',
+                        Authorization: `Bearer ${token}`
+                    }}).then(response =>{
+                        
+                        
+                        
+                        this.clientes = response.data;
+                        
+                        
+
+                        if(this.cliente.vendedores.length == 0)
+                        {
+                            this.condControlVendedor == false;
+
+                        }else{
+                            this.condControlVendedor == true;
+
+
+                        }
+                        
+                        
+                        
+                    })
+                    
+                },
+                validacoeRespostaBackEnd: function(response){
+                    
+                    if(response.data.errorBoolean)
+                            {
+                                
+                                if(response.data.error.nome != undefined)
+                                {
+                                    this.erro.mostrar = true;
+                                    this.tipo.alerta = "warning";
+                                    this.erro.mensagem = response.data.error.nome[0]
+                                    setTimeout(() => {
+                                        
+                                        this.erro.mostrar = false;}, 2000);
+
+                                }else if(response.data.error.email != undefined)
+                                {
+                                    this.erro.mostrar = true;
+                                    this.tipo.alerta = "warning";
+                                    this.erro.mensagem = response.data.error.email[0]
+                                    setTimeout(() => {this.erro.mostrar = false;}, 2000);
+
+
+                                }else if(response.data.error.senha != undefined )
+                                {
+                                    this.erro.mostrar = true;
+                                    this.tipo.alerta = "warning";
+                                    this.erro.mensagem = response.data.error.senha[0]
+                                    
+                                    setTimeout(() => {this.erro.mostrar = false;}, 2000);
+
+
+                                }else if ( response.data.error.password != undefined)
+                                {
+                                    this.erro.mostrar = true;
+                                    this.tipo.alerta = "warning";
+                                    this.erro.mensagem = response.data.error.password[0]
+                                    setTimeout(() => {this.erro.mostrar = false;}, 2000);
+                                }else if(response.data.error.telefone != undefined)
+                                {
+                                    this.erro.mostrar = true;
+                                    this.tipo.alerta = "warning";
+                                    this.erro.mensagem = response.data.error.telefone[0]
+                                    setTimeout(() => {this.erro.mostrar = false;}, 2000);
+
+
+                                }else if(response.data.error.foto != undefined)
+                                {
+                                    this.erro.mostrar = true;
+                                    this.tipo.alerta = "warning";
+                        
+                                    this.erro.mensagem = response.data.error.foto[0]
+                                    this.erro.mensagem = response.data.error.foto
+                                    
+                                    
+                                    setTimeout(() => {this.erro.mostrar = false;}, 2000);
+
+                                    
+                                }else if(response.data.error.emailnvalido != undefined)
+                                {
+                                  
+                                    this.erro.mostrar = true;
+                                    this.tipo.alerta = "error";
+                                    this.erro.mensagem = response.data.error.emailnvalido
+                                    
+                                    setTimeout(() => {this.erro.mostrar = false;
+                                    }, 2000);
+
+                                    
+                                }
+                                
+                                
+                                
+                            }else
+                            {
+                                document.getElementById('foto').value = "";
+                                this.limparCampos();
+                                
+                                if(response.data.mensagem != undefined)
+                                {
+
+                                    this.erro.mostrar = true;
+                                    this.tipo.alerta = "success";
+                                    this.erro.mensagem = response.data.mensagem;
+                                    setTimeout(() => {
+                                        this.erro.mostrar = false;
+                                        this.dialog = false;
+                                    }, 2000);
+
+
+
+                                }
+                                
+                                    
+                                    
+                                
+                                this.mostrar();
+
+                            }
+                            
+
+                },
+                novovendedor:function(){
+                    this.vendedor = true;
+
+                    
+
+
+
+                },
+                novocliente:function(){
+                    
+                    
+                    
+                    
+                    this.dialog=true;
+                    this.controlador = false;
+                    
+                    this.tipocliente = " - Novo"
+                    this.limparCampos();
+
+                    this.listarDadosVendedor()
+                    
+                    
+
+                    
+                    this.opcao = "criarNovocliente"
+                },
+                salvarcliente: function()
+                {
+                    if( this.opcao == "criarNovocliente" )
+                    {
+                        
+                        
+                        this.criarNovocliente();
+                    }else if(this.opcao == "editarcliente")
+                    {
+                        
+                        this.editandocliente();
+
+                    }
+                    
+                    
+                },
+                criarNovocliente:function(){
+
+                    if(this.cliente.vendedores.length == 0)
+                    {
+                        this.erro.mostrar = true;
+                        this.tipo.alerta = "error";
+                        this.erro.mensagem = "Por favor Registrar um Vendedor"
+                        setTimeout(() => {this.erro.mostrar = false;}, 2000);
+                        return;
+
+                    }
+                    let token = localStorage.getItem('access_token');
+                    
+                    
+                    let formCriarcliente = new FormData();
+                    formCriarcliente.append('nome', this.cliente.nome);
+                    formCriarcliente.append('email', this.cliente.email);
+                    formCriarcliente.append('telefone', parseInt(this.cliente.telefone));
+                    formCriarcliente.append('password', this.cliente.senha);
+                    formCriarcliente.append('foto', this.cliente.foto);
+                    formCriarcliente.append('vendedor', this.cliente.vendedor);
+                    formCriarcliente.append('tipoCliente', this.cliente.tipoClienteEscolhido);
+                    
+
+                    let urlPost = "http://127.0.0.1:8000/api/novoCliente/";
+                    
+                    axios.post(urlPost, formCriarcliente,{headers: {
+
+                        'Content-Type': 'multipart/form-data',
+                        Authorization: `Bearer ${token}`
+                        }}).then(response=>{
+                            
+                            
+                            
+
+                           this.validacoeRespostaBackEnd(response);
+                           if(response.status == 200)
+                            {
+                                this.erro.mostrar = true;
+                                this.tipo.alerta = "success";
+                                this.erro.mensagem = "Cliente Cadastrado com sucesso!!!"
+                                setTimeout(() => {
+                                    this.erro.mostrar = false;
+                                    this.dialog = false;
+                                }, 2000);
+
+                            }
+                           
+
+                           
+
+                            
+                            
+                            
+                            
+                        }).catch((error) => {
+                            this.erro.mostrar = true;
+                            this.tipo.alerta = "error";
+                            this.erro.mensagem = "Cliente não cadastrado"
+                                    
+                            setTimeout(() => {this.erro.mostrar = false;
+                            }, 2000);
+                        })
+                    
+                    
+
+                   
+
+
+                },
+                editarcliente:function(id,nome,email,telefone,foto,tipoCliente,vendedor)
+                {
+            
+                    this.dialog = true;
+                    this.limparCampos();
+                    this.condEdicao = true;
+                   
+                    this.listarDadosVendedor();
+                    
+                    this.tipocliente = " - Edição"
+                    
+                    this.cliente.id = id;
+                    this.cliente.nome = nome;
+                    this.cliente.email = email;
+                    this.cliente.telefone= telefone;
+                    
+                    this.cliente.foto = foto;
+                    this.cliente.vendedor = vendedor;
+                    this.cliente.tipoClienteEscolhido = tipoCliente
+                    
+                    this.opcao= "editarcliente";
+
+                },
+                deletandocliente(id)
+                {
+                    Swal.fire({
+                        title: 'Deseja excluir o cliente?',   
+                        confirmButtonText: `Confirmar`,                  
+                        showCancelButton: true,                          
+                    }).then((result) => {                
+                        if (result.isConfirmed) { 
+                            let token = localStorage.getItem('access_token');
+                            let urlDel = "http://127.0.0.1:8000/api/deletandoCliente/"+id;
+                            
+                            axios.delete(urlDel,{headers: {
+
+                            'Content-Type': 'multipart/form-data',
+                            Authorization: `Bearer ${token}`
+                            }}).then(response=>{
+                                this.limparCampos();
+                                this.mostrar();
+                                this.controlador == false;
+                               
+                                
+                                
+                        
+                               
+                            
+                            
+                            }) 
+                            
+                            
+                            
+                        Swal.fire('Excluido com  Sucesso!!!', '', 'success')
+                        } else if (result.isDenied) {                  
+                        }
+                        
+                    }); 
+                               
+                     
+                    
+                    
+                },
+                editandocliente:function()
+                {
+
+                    if(this.controlador == true)
+                    {
+                        
+                        let token = localStorage.getItem('access_token');
+                        
+                        let formDataEdit = new FormData();
+                        
+                        let urlEdit ="http://127.0.0.1:8000/api/atualizarCliente";
+                        formDataEdit.append('id', this.cliente.id);
+                        formDataEdit.append('nome', this.cliente.nome);
+                        formDataEdit.append('email', this.cliente.email);
+                        formDataEdit.append('telefone', parseInt(this.cliente.telefone));
+                        formDataEdit.append('foto', this.cliente.foto);
+                        formDataEdit.append('vendedor', this.cliente.vendedor);
+                        formDataEdit.append('tipoCliente', this.cliente.tipoClienteEscolhido);
+                        
+                        
+
+                        axios.post(urlEdit, formDataEdit,{headers: {
+
+                        'Content-Type': 'multipart/form-data',
+                        Authorization: `Bearer ${token}`
+                        }}).then(response=>{
+                            
+                            if(response.status == 200)
+                            {
+                                this.erro.mostrar = true;
+                                this.tipo.alerta = "success";
+                                this.erro.mensagem = "Edição ocorrida com sucesso!!!"
+                                setTimeout(() => {
+                                    this.erro.mostrar = false;
+                                    this.dialog = false;
+                                    this.mostrar();
+                                }, 2000);
+
+                            }
+                           
+                            this.condEdicao = false;
+
+                            this.controlador == false;
+                            
+                            
+                            
+                        }).catch((error) => {
+                            this.erro.mostrar = true;
+                            this.tipo.alerta = "error";
+                            this.erro.mensagem = "Por favor tente novamente mais tarde!!!"
+                                    
+                            setTimeout(() => {this.erro.mostrar = false;
+                            }, 2000);
+                            
+                        })
+
+                    }else
+                    {
+                        let token = localStorage.getItem('access_token');
+                       
+                        
+                        let formDataEditSemIMG = new FormData();
+                        
+                        
+                        let urlEdit ="http://127.0.0.1:8000/api/atualizarCliente";
+                        formDataEditSemIMG.append('id', this.cliente.id);
+                        formDataEditSemIMG.append('nome', this.cliente.nome);
+                        formDataEditSemIMG.append('email', this.cliente.email);
+                        formDataEditSemIMG.append('telefone', parseInt(this.cliente.telefone));
+                        formDataEditSemIMG.append('url', this.cliente.foto);
+                        formDataEditSemIMG.append('vendedor', this.cliente.vendedor);
+                        formDataEditSemIMG.append('tipoCliente', this.cliente.tipoClienteEscolhido);
+                        
+                        
+
+                        
+
+                        axios.post(urlEdit, formDataEditSemIMG,{headers: {
+
+                        'Content-Type': 'multipart/form-data',
+                        Authorization: `Bearer ${token}`
+                        }}).then(response=>{
+                            
+                            
+                            
+                            
+                            if(response.status == 200)
+                            {
+                                this.erro.mostrar = true;
+                                this.tipo.alerta = "success";
+                                this.erro.mensagem = "E-mail Enviado com Sucesso!!!"
+                                setTimeout(() => {
+                                    this.erro.mostrar = false;
+                                    this.dialog = false;
+                                    this.mostrar();
+                                }, 2000);
+
+                            }
+                            this.condEdicao = false;
+                            
+                            
+                        }).catch((error) => {
+                            this.erro.mostrar = true;
+                            this.tipo.alerta = "error";
+                            this.erro.mensagem = "Por favor tente novamente mais tarde!!!"
+                                    
+                            setTimeout(() => {this.erro.mostrar = false;
+                            }, 2000);
+                            
+                        })
+
+
+                    }
+
+                    
+
+                },
+                fileEscolhido: function(event)
+                {
+                    
+                    
+                    let file = document.getElementById('foto').files[0]; 
+
+                    this.cliente.foto = file;
+                    
+                   
+                    if(this.opcao == "editarcliente")
+                    {
+                        this.controlador = true;
+                        this.condEdicao = false
+
+                    }
+
+                    
+
+                   
+                    
+
+
+                    
+                },
+                limparCampos: function(){
+                    if(document.getElementById('foto') != null)
+                    {
+                        
+                        document.getElementById('foto').value = "";
+
+                    }
+                    
+                    this.cliente.id = null;
+                    this.cliente.nome = ""
+                    this.cliente.email = ""
+                    this.cliente.telefone = ""
+                   
+                    this.cliente.foto = ""
+                    this.cliente.vendedor = "";
+                    this.cliente.tipoClienteEscolhido = "";
+
+
+                },
+
+
+                registrandoVendedorNovo:function(){
+
+                   
+                    let token = localStorage.getItem('access_token');
+                    
+                    
+                    let formCriarVendedor = new FormData();
+                    formCriarVendedor.append('nome', this.cadastrandoVendedor.nome);
+
+                    let urlPost = "http://127.0.0.1:8000/api/novoVendedor/";
+                    
+                    axios.post(urlPost, formCriarVendedor,{headers: {
+
+                        'Content-Type': 'multipart/form-data',
+                        Authorization: `Bearer ${token}`
+                        }}).then(response=>{
+                            
+                            
+                            
+
+                           
+
+                           if(response.status == 200)
+                            {
+                                
+                                this.erro.mostrar = true;
+                                this.tipo.alerta = "success";
+                                this.erro.mensagem = "Vendedor Cadastrado com Sucesso!!!"
+                                setTimeout(() => {
+                                    this.erro.mostrar = false;
+                                    this.dialog = false;
+                                    this.cadastrandoVendedor.nome="";
+                                }, 2000);
+
+                            }
+                           
+
+                           
+
+                            
+                            
+                            
+                            
+                        }).catch((error) => {
+                            this.erro.mostrar = true;
+                            this.tipo.alerta = "error";
+                            this.erro.mensagem = "Vendedor não cadastrado!!! "
+                                    
+                            setTimeout(() => {this.erro.mostrar = false;
+                            }, 2000);
+                        })
+                    
+                    this.listarDadosVendedor();
+
+
+                }
+
+
+            }
+        })
+    </script>
+    
+</body>
+</html>
