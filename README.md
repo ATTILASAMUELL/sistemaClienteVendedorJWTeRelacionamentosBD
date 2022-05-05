@@ -5,7 +5,7 @@
 [![Play Store](https://img.shields.io/badge/Google_Play-414141?style=for-the-badge&logo=google-play&logoColor=white)](https://play.google.com/store/apps/details?id=attila.QRCodeGeradorLeitor)
 
 
-<h1>  Desafio Full Stack Laravel e Vue JS </h1>
+<h1> Sistema Administrativo Laravel e Vue JS </h1>
 
 <div style="display:inline_block"><br/>
   
@@ -28,7 +28,7 @@ Sistema Registro - Crud - Completo
 <br>
 -- Front e Back-End
 <br>
--- Validações feitas no back-end (Laravel usado como api) #Api
+-- Validações feitas no back-end JWT (Laravel usado como api) #Api
 <br>
 -- Banco de dados Mysql
 <br>
@@ -36,7 +36,10 @@ Sistema Registro - Crud - Completo
 <br>
 -- Front-End Vue Js - Vuetifyjs
 <br>
--- Sistema de registro , inclusão, alterar, deletar e listar, tudo feito sem o refresh da pagina. 
+-- Sistema Administrativo , inclusão, alterar, deletar e listar, tudo feito sem o refresh da pagina. 
+<br>
+-- Relacionamentos 1x1, 1xN,NxN.
+<br>
 <br>
 -- Sistema de registro foi usado axios para requisições ajax. 
 <br>
