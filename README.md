@@ -96,20 +96,20 @@ https://user-images.githubusercontent.com/76443540/167030789-7471cb9e-8e50-4c1a-
 
 <br>
 <br>
--------------- INSTRUÇÕES DE USO DO SISTEMA DE ADMINISTRATIVO ---------------------------
+<h1>--- INSTRUÇÕES DE USO DO SISTEMA DE ADMINISTRATIVO --<h1>
 <br>
 <br>
 
-------> Baixar e Instalar o XAMPP  e criar no PhpMyAdmin : criar o DataBase:bandodedadossistemalaravelcompleto <-----------
+<h3>------> Baixar e Instalar o XAMPP  e criar no PhpMyAdmin : criar o DataBase:bandodedadossistemalaravelcompleto <-----------</h3>
 <br>
 <br>
--------------------------------> Baixar e Instalar o Composer <----------------------------------------
+<h3>-------------> Baixar e Instalar o Composer <--------------------------------</h3>
 <br>
 <br>
---------------------------> Baixar e Instalar o Laravel 8.* via composer <------------------------------
+<h3>--------------> Baixar e Instalar o Laravel 8.* via composer <----------------------</h3>
 <br>
 <br>
-------------------------------> Rodar migration do Laravel 8.* e rodar o php artisan serve<-------------
+<h3>--------------------> Rodar migration do Laravel 8.* e rodar o php artisan serve<---------</h3>
 <br>
 <br>
-** A parte do VUE JS - foi usado - vuetifyjs CDN - não precisa baixar e instalar nada, somente conectado a internet e verificar se o servidor está rodando normalmente.
+<h3>** A parte do VUE JS - foi usado - vuetifyjs CDN - não precisa baixar e instalar nada, somente conectado a internet e verificar se o servidor está rodando normalmente.</h3>
