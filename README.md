@@ -71,7 +71,8 @@ https://user-images.githubusercontent.com/76443540/167030789-7471cb9e-8e50-4c1a-
 <br>
 <h1> Rotas da Api, protegidas com JWT:  </h1>
 
-<img src="https://user-images.githubusercontent.com/76443540/167032645-4c1f27d9-ce2e-442f-94cc-544a490e1c60.png">
+![image](https://user-images.githubusercontent.com/76443540/167048818-62cd796b-a30b-4fc8-8681-9a9ddaf61933.png)
+
 
 <br>
 <br>
