@@ -1,0 +1,22 @@
+taborylaravel@gmail.com
+
+
+Login Sistema Administrativo:
+E-mail: testelaravelsistema@gmail.com
+Senha: testando12345
+
+
+Sistema Administrativo - Crud - Completo
+-- Front e Back-End
+-- Validações feitas no back-end JWT (Laravel usado como api) #Api
+-- Banco de dados Mysql
+-- No back-end foi usado Laravel e Mysql
+-- Front-End Vue Js - Vuetifyjs
+-- Sistema Administrativo , inclusão, alterar, deletar e listar, tudo feito sem o refresh da pagina.
+-- Relacionamentos 1x1, 1xN,NxN.
+
+-- Sistema de registro foi usado axios para requisições ajax. 
+GitHub:
+https://github.com/ATTILASAMUELL/sistemaClienteVendedorJWTeRelacionamentosBD/blob/main/README.md
+
+https://www.youtube.com/watch?v=v54vX0g-ZCU
